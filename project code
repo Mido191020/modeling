@@ -1,0 +1,293 @@
+#include <iostream>
+#include <vector>
+#include <cmath>
+#include <algorithm>
+#include <iomanip>
+#include <sstream>
+
+using namespace std;
+
+// Inversive Congruential Generator (ICG)
+class ICG {
+private:
+    float X0;
+    float A;
+    float M;
+    int N;
+
+public:
+    ICG(float x0, float a, float m, int n) : X0(x0), A(a), M(m), N(n) {}
+
+    void calc() {
+        cout << "X 0 = " << X0 << "\n";
+        cout << "R 0 = " << (X0 / M) << "\n";
+        for (int i = 0; i < N; i++) {
+            X0 = fmod(A / X0, M);
+            cout << "X" << (i + 1) << " = " << X0 << "\n";
+            cout << "R" << (i + 1) << " = " << (X0 / M) << "\n";
+        }
+    }
+};
+
+// Kolmogorov-Smirnov Test (KS Test)
+class KS_Test {
+private:
+    vector<double> data;
+
+public:
+    KS_Test(vector<double> input_data) : data(input_data) {}
+
+    double kolmogorov_smirnov_test() {
+        sort(data.begin(), data.end());
+        double D = 0.0;
+        for (size_t i = 0; i < data.size(); ++i) {
+            double diff_cdf = abs((i + 1) / (double)data.size() - data[i]);
+
+            if (diff_cdf > D) {
+                D = diff_cdf;
+            }
+        }
+        return D;
+    }
+
+    void print_result(double D, double alpha) {
+        double critical_value = 1.36 / sqrt(data.size());
+        cout << "Kolmogorov-Smirnov test statistic: " << D << endl;
+        cout << "Critical value at alpha=" << alpha << "≈ " << critical_value << endl;
+        if (D < critical_value) {
+            cout << "Step 4: For alpha=" << alpha << "," << endl;
+            cout << "D1-alpha = " << critical_value << " > D" << endl;
+            cout << "Hence, H0 is not rejected." << endl;
+        } else {
+            cout << "Step 4: For alpha=" << alpha << "," << endl;
+            cout << "D1-alpha = " << critical_value << " < D" << endl;
+            cout << "Hence, H0 is rejected." << endl;
+        }
+    }
+};
+
+// Lagged Fibonacci Generator (LFG)
+class LFG {
+public:
+    static double laggedFibonacciGenerator(int k, int j, char op, int x0, int x1, int m) {
+        vector<int> seed;
+        seed.push_back(x0);
+        seed.push_back(x1);
+
+        cout << "i\t\t xi\t\t Value" << endl;
+        cout << "***********" << endl;
+
+        for (int i = 2; i < m; ++i) {
+            int nextValue;
+            switch (op) {
+                case '+':
+                    nextValue = (seed[i - j] + seed[i - k]) % 100;
+                    break;
+                case '-':
+                    nextValue = (seed[i - j] - seed[i - k]) % 100;
+                    break;
+                case '*':
+                    nextValue = (seed[i - j] * seed[i - k]) % 100;
+                    break;
+                case '/':
+                    nextValue = (seed[i - j] / seed[i - k]) % 100;
+                    break;
+                case '&':
+                    nextValue = seed[i - j] & seed[i - k];
+                    break;
+                case '|':
+                    nextValue = seed[i - j] | seed[i - k];
+                    break;
+                case '^':
+                    nextValue = seed[i - j] ^ seed[i - k];
+                    break;
+                default:
+                    cout<< "Invalid operator!" << endl;
+                    return -1;
+            }
+
+            if (nextValue < 0)
+                nextValue += 100;
+
+            seed.push_back(nextValue);
+
+            cout << i << "\t\t " << seed[i] << "\t\t " << static_cast<double>(nextValue) / 100 << endl;
+        }
+
+        return static_cast<double>(seed.back()) / 100;
+    }
+};
+
+// Middle Square Method (MSM)
+class MSM {
+public:
+    static double msm(int seed) {
+        int square = seed * seed;
+        stringstream ss;
+        ss << setw(8) << setfill('0') << square;
+        string squareString = ss.str();
+        string middleString = squareString.substr(2, 4);
+        int mid = stoi(middleString);
+        return (mid / 10000.0);
+    }
+};
+
+// Multiple Recursive Generator (MRG)
+class MRG {
+private:
+    vector<double> A;
+    int modulus;
+    vector<int> X;
+
+public:
+    void set_mul() {
+        cout << "Enter the number of multipliers (q): ";
+        int q;
+        cin >> q;
+        cout << "Enter the multipliers separated by commas: ";
+        string multipliers_input;
+        cin.ignore();
+        getline(cin, multipliers_input);
+        stringstream ss(multipliers_input);
+        double a;
+        char comma;
+        for (int i = 0; i < q; ++i) {
+            ss >> a;
+            A.push_back(a);
+            if (ss.peek() == ',') {
+                ss >> comma;
+            }
+        }
+    }
+
+    void setM() {
+        cout << "Enter the modulus (m): ";
+        cin >> modulus;
+    }
+
+    void set_X() {
+        cout << "Enter the number (q): ";
+        int q;
+        cin >> q;
+        cout << "Enter the x  ";
+        int x;
+        for (int i = 0; i < q; ++i) {
+            cin >> x;
+            X.push_back(x);
+        }
+    }
+
+    double generate_MRG() {
+        double ans = 0.0;
+        for (size_t i = 0; i < A.size(); ++i) {
+            ans = ans + A[i] * X[i];
+        }
+        return ans / modulus;
+    }
+};
+
+int main() {
+    int choice;
+    bool exit_program = false;
+
+    while (!exit_program) {
+        cout << "\nChoose an option:" << endl;
+        cout << "1. Inversive Congruential Generator (ICG)" << endl;
+        cout << "2. Kolmogorov-Smirnov Test (KS Test)" << endl;
+        cout << "3. Lagged Fibonacci Generator (LFG)" << endl;
+        cout << "4. Middle Square Method (MSM)" << endl;
+        cout << "5. Multiple Recursive Generator (MRG)" << endl;
+        cout << "6. Exit" << endl;
+        cout << "Enter your choice: ";
+        cin >> choice;
+
+        switch (choice) {
+            case 1: {
+                float x0, a, m;
+                int n;
+                cout << "Enter seed: ";
+                cin >> x0;
+                cout << "Enter modulus: ";
+                cin >> m;
+                cout << "Enter A: ";
+                cin >> a;
+                cout << "Enter the length of the numbers to generate: ";
+                cin >> n;
+                ICG generator(x0, a, m, n);
+                generator.calc();
+                break;
+            }
+            case 2: {
+                vector<double> user_data;
+                int n;
+                double alpha = 0.05;
+                cout << "Enter the number of values: ";
+                cin >> n;
+                cout << "Enter the values:\n";
+                for (int i = 0; i < n; ++i) {
+                    double val;
+                    cin >> val;
+                    user_data.push_back(val);
+                }
+                KS_Test ks_test(user_data);
+                double D = ks_test.kolmogorov_smirnov_test();
+                ks_test.print_result(D, alpha);
+                break;
+            }
+            case 3: {
+                int k, j, x0, x1, m;
+                char op;
+                cout << "Enter the value of k: ";
+                cin >> k;
+                cout << "Enter the value of j: ";
+                cin >> j;
+                cout << "Enter the op(+, -, *, /, &, |, ^): ";
+                cin >> op;
+                cout << "Enter the initial value x0: ";
+                cin >> x0;
+                cout << "Enter the second initial value x1: ";
+                cin >> x1;
+                cout << "Enter the number of values to modulus: ";
+                cin >> m;
+                double result = LFG::laggedFibonacciGenerator(k, j, op, x0, x1, m);
+                cout << "Result: " << result << endl;
+                break;
+            }
+            case 4: {
+                int initialSeed, numberOfValues;
+                cout << "Enter initial seed value: ";
+                cin >> initialSeed;
+                cout << "Enter the number of values to generate: ";
+                cin >> numberOfValues;
+
+                int seed = initialSeed;
+
+                cout << "Generated random numbers using middle-square method:" << endl;
+                for (int i = 0; i < numberOfValues; ++i) {
+                    double randomNumber = MSM::msm(seed);
+                    int squareNumber = seed * seed;
+                    cout << setw(4) << setfill('0') << seed << " " << setw(8) << squareNumber << " " << setw(4) << randomNumber << endl;
+                    seed = static_cast<int>(randomNumber * 10000);
+                }
+                break;
+            }
+            case 5: {
+                MRG mrg;
+                mrg.set_mul();
+                mrg.setM();
+                mrg.set_X();
+                cout << "THE MRG: " << mrg.generate_MRG() << endl;
+                break;
+            }
+            case 6: {
+                exit_program = true;
+                cout << "Exiting the program..." << endl;
+                break;
+            }
+            default:
+                cout << "Invalid choice!" << endl;
+        }
+    }
+
+    return 0;
+}
